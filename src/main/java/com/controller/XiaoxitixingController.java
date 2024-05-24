@@ -1,0 +1,200 @@
+package com.controller;
+
+import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Date;
+import java.util.List;
+import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
+
+import com.utils.ValidatorUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import com.baomidou.mybatisplus.mapper.EntityWrapper;
+import com.baomidou.mybatisplus.mapper.Wrapper;
+import com.annotation.IgnoreAuth;
+
+import com.entity.XiaoxitixingEntity;
+import com.entity.view.XiaoxitixingView;
+
+import com.service.XiaoxitixingService;
+import com.service.TokenService;
+import com.utils.PageUtils;
+import com.utils.R;
+import com.utils.MPUtil;
+import com.utils.MapUtils;
+import com.utils.CommonUtil;
+
+/**
+ * 消息提醒 
+ * 后端接口
+ * @author 
+ * @email 
+ * @date 2024-04-22 16:28:31
+ */
+@RestController
+@RequestMapping("/xiaoxitixing")
+public class XiaoxitixingController {
+    @Autowired
+    private XiaoxitixingService xiaoxitixingService;
+
+
+
+
+
+    
+
+
+
+    /**
+     * 后台列表
+     */
+    @RequestMapping("/page")
+    public R page(@RequestParam Map<String, Object> params,XiaoxitixingEntity xiaoxitixing, 
+		HttpServletRequest request){
+
+		String tableName = request.getSession().getAttribute("tableName").toString();
+		if(tableName.equals("yisheng")) {
+			xiaoxitixing.setYishenggonghao((String)request.getSession().getAttribute("username"));
+		}
+		if(tableName.equals("huanzhe")) {
+			xiaoxitixing.setHuanzhezhanghao((String)request.getSession().getAttribute("username"));
+		}
+        EntityWrapper<XiaoxitixingEntity> ew = new EntityWrapper<XiaoxitixingEntity>();
+
+
+		PageUtils page = xiaoxitixingService.queryPage(params, MPUtil.sort(MPUtil.between(MPUtil.likeOrEq(ew, xiaoxitixing), params), params));
+        return R.ok().put("data", page);
+    }
+    
+    /**
+     * 前台列表
+     */
+    @RequestMapping("/list")
+    public R list(@RequestParam Map<String, Object> params,XiaoxitixingEntity xiaoxitixing, 
+		HttpServletRequest request){
+        EntityWrapper<XiaoxitixingEntity> ew = new EntityWrapper<XiaoxitixingEntity>();
+
+		PageUtils page = xiaoxitixingService.queryPage(params, MPUtil.sort(MPUtil.between(MPUtil.likeOrEq(ew, xiaoxitixing), params), params));
+        return R.ok().put("data", page);
+    }
+
+
+	/**
+     * 列表
+     */
+    @RequestMapping("/lists")
+    public R list( XiaoxitixingEntity xiaoxitixing){
+       	EntityWrapper<XiaoxitixingEntity> ew = new EntityWrapper<XiaoxitixingEntity>();
+      	ew.allEq(MPUtil.allEQMapPre( xiaoxitixing, "xiaoxitixing")); 
+        return R.ok().put("data", xiaoxitixingService.selectListView(ew));
+    }
+
+	 /**
+     * 查询
+     */
+    @RequestMapping("/query")
+    public R query(XiaoxitixingEntity xiaoxitixing){
+        EntityWrapper< XiaoxitixingEntity> ew = new EntityWrapper< XiaoxitixingEntity>();
+ 		ew.allEq(MPUtil.allEQMapPre( xiaoxitixing, "xiaoxitixing")); 
+		XiaoxitixingView xiaoxitixingView =  xiaoxitixingService.selectView(ew);
+		return R.ok("查询消息提醒成功").put("data", xiaoxitixingView);
+    }
+	
+    /**
+     * 后台详情
+     */
+    @RequestMapping("/info/{id}")
+    public R info(@PathVariable("id") Long id){
+        XiaoxitixingEntity xiaoxitixing = xiaoxitixingService.selectById(id);
+        xiaoxitixing = xiaoxitixingService.selectView(new EntityWrapper<XiaoxitixingEntity>().eq("id", id));
+        return R.ok().put("data", xiaoxitixing);
+    }
+
+    /**
+     * 前台详情
+     */
+    @RequestMapping("/detail/{id}")
+    public R detail(@PathVariable("id") Long id){
+        XiaoxitixingEntity xiaoxitixing = xiaoxitixingService.selectById(id);
+        xiaoxitixing = xiaoxitixingService.selectView(new EntityWrapper<XiaoxitixingEntity>().eq("id", id));
+        return R.ok().put("data", xiaoxitixing);
+    }
+    
+
+
+
+    /**
+     * 后台保存
+     */
+    @RequestMapping("/save")
+    public R save(@RequestBody XiaoxitixingEntity xiaoxitixing, HttpServletRequest request){
+    	//ValidatorUtils.validateEntity(xiaoxitixing);
+
+        xiaoxitixingService.insert(xiaoxitixing);
+        return R.ok();
+    }
+    
+    /**
+     * 前台保存
+     */
+    @RequestMapping("/add")
+    public R add(@RequestBody XiaoxitixingEntity xiaoxitixing, HttpServletRequest request){
+    	//ValidatorUtils.validateEntity(xiaoxitixing);
+
+        xiaoxitixingService.insert(xiaoxitixing);
+        return R.ok();
+    }
+
+
+
+
+    /**
+     * 修改
+     */
+    @RequestMapping("/update")
+    @Transactional
+    public R update(@RequestBody XiaoxitixingEntity xiaoxitixing, HttpServletRequest request){
+        //ValidatorUtils.validateEntity(xiaoxitixing);
+        xiaoxitixingService.updateById(xiaoxitixing);//全部更新
+        return R.ok();
+    }
+
+    
+    
+
+    /**
+     * 删除
+     */
+    @RequestMapping("/delete")
+    public R delete(@RequestBody Long[] ids){
+        xiaoxitixingService.deleteBatchIds(Arrays.asList(ids));
+        return R.ok();
+    }
+    
+	
+
+
+
+
+
+
+
+
+
+
+}
